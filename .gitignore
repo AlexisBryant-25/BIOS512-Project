@@ -1,0 +1,63 @@
+# === R and RStudio ===
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+.Rproj
+.Rapp.history
+.Rbuildignore
+
+# === R Markdown ===
+*.utf8.md
+*.knit.md
+*.nb.html
+*_cache/
+cache/
+*.Rout
+*.Rout.save
+*.RDataTmp
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.aux
+*.tex
+
+# === Project Output ===
+report/*.html
+report/*.pdf
+report/*.docx
+report/*.nb.html
+report/*.md
+
+# === Data files ===
+# (keep raw CSVs in /data, ignore generated intermediates)
+data/*.rds
+data/*.RData
+data/temp/
+data/processed_*
+
+# === Temporary and OS files ===
+.DS_Store
+Thumbs.db
+__MACOSX/
+*.tmp
+*.bak
+*~
+*.swp
+
+# === Container/Build Artifacts ===
+*.tar
+*.tar.gz
+*.zip
+*.gz
+*.tgz
+*.log
+*.pid
+*.lock
+*.env
+.env
+.vscode/
+.idea/
+
