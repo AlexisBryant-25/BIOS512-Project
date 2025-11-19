@@ -1,0 +1,148 @@
+---
+title: 'Uncorking Quality: A Data Driven Exploration of Wine Chemistry and Quality'
+author: "Alexis Bryant"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(cluster)
+library(factoextra)
+library(caret)
+library(glmnet)
+library(GGally)
+```
+
+# Introduction
+
+This project uses a Jaggle dataset containing the results of chemical analyses of wines grown in the same region of italy. Each record represents one wine sample with 13 laboratory-measured chemical attributes and a cultivar (class) label. This dataset is ideal fro exploring dimensionality reduction, clustering, and regression/classification.The goal of this project is to uncover the chemical characteristics that distinguish wine types and predict quality.
+
+
+# Data Loading and Overview
+
+```{r}
+wine<-read_csv("wine_dataset.csv")
+glimpse(wine)
+summary(wine)
+```
+
+This dataset includes variables such as:
+-Alcohol
+-Malic Acid
+-Ash
+-Alcalinity_of_Ash
+-Magnesium
+-Total_Phenols
+-Flavanoids
+-Nonflavanoid_Phenols
+-Proanthocyanins
+-Color_Intensity
+-Hue
+-0D280/0D315
+-Proline
+
+and the class label. All are numeric, making this dataset suitable for PCA and k-means clustering.
+
+
+# Exploratory Data Analysis
+
+```{r}
+wine_long<-wine%>%
+  pivot_longer(cols = -Class, names_to = "Variable",
+               values_to = "Value")
+ggplot(wine_long,aes(x = Values)) + 
+  geom_histogram(bins = 30, fill = "darkred", color = "white") +
+  facet_wrap(~Variable, scales = "free") + theme_minimal() +
+  labs(title = "Distribution of Wine Chemical Features", x = "Value", y = "Count")
+```
+
+Interpretation: 
+
+Most variables are roughly continuous, though some show skewed distributions. This suggests standardization before PCA or Clustering.
+
+
+# Dimensionality Reduction (PCA)
+
+```{r}
+wine_scaled <- scale(select(wine, -Class))
+pca <- prcomp(wine_scaled, center = TRUE, scale. = TRUE)
+fviz_eig(pca)
+fviz_pca_biplot(pca, habillage = wine$Class, addEllipses = TRUE)
+```
+
+Interpretation:
+
+The scree plot shows how much variance is captured by each principal component.
+
+PC1 and PC2 together explain most of the variance and vicually separate wine classes well
+
+
+# Clustering
+
+```{r}
+set.seed(123)
+km <- kmeans(wine_scaled, centers = 3, nstart = 25)
+fviz_cluster(km, data = wine_scaled, geom = "point", ellipse.type = "norm",
+ggtheme = theme_minimal(), main = "K-Means Clustering of Wines")
+```
+
+Interpretation:
+
+K-means successfully identifies three clusters, which correspond roughly to the three cultivars. This suggests that wines of different cultivars differ in their chemical composition.
+
+
+# Regression / Classification
+
+## Logistic Regression (Multinomial)
+
+```{r}
+library(nnet)
+wine$Class <- as.factor(wine$Class)
+
+set.seed(123)
+train_idx <- createDataPartition(wine$Class, p = 0.75, list = FALSE)
+train <- wine[train_idx, ]
+test <- wine[-train_idx, ]
+
+model <- multinom(Class ~ ., data = train)
+pred <- predict(model, newdata = test)
+confusionMatrix(pred, test$Class)
+```
+
+Interpretation:
+
+The confusion matrix shows high classification accuracy, indicating that the chemical properties effectively predict wine type.
+
+
+## LASSO Regularized Classification
+
+```{r}
+x <- model.matrix(Class ~ . - 1, data = train)
+y <- train$Class
+
+set.seed(123)
+cvfit <- cv.glmnet(x, y, family = "multinomial", alpha = 1)
+plot(cvfit)
+coef(cvfit, s = "lambda.min")
+```
+
+Interpretation:
+
+LASSO shrinks less informative coefficients toward zero, leaving only the most predictive variables.
+This results in a parsimonious model with nearly the same accuracy but simpler interpretation.
+
+
+# Conclusions and Future Work
+
+PCA revealed that the first two components explain most of the variability and separate cultivars clearly.
+
+K-means clustering identified natural groupings consistent with wine type.
+
+Logistic and LASSO regression both achieved high accuracy, showing chemical composition is predictive of cultivar.
+
+Future work: compare these results to unsupervised clustering on quality ratings, or test other ML classifiers (e.g., random forest).
+
+
+
