@@ -2,12 +2,21 @@
 
 ## Overview
 This project analyzes a Kaggle dataset containing 178 laboratory measurements of wines from the same Italian region.
+<<<<<<< ours
 Each record includes 13 chemical attributes and a cultivar label (three classes).
 The analysis combines exploratory data analysis, **PCA**, **k-means clustering**, and **multinomial classification** (with and without LASSO regularization) to understand which chemical features distinguish cultivars and how accurately they can be predicted.
 
 ## Repository Structure
 - `Report/` – Main analysis report (`BIOS512-Project.Rmd`) and the raw dataset (`wine_dataset.csv`).
 - `Data/` – (optional) placeholder for additional datasets.
+=======
+Each record includes 13 chemical attributes and an unlabeled numeric `target` code (0–2) rather than explicit cultivar names.
+Because cultivar identities are unknown, the analysis emphasizes unsupervised structure—EDA, **PCA**, **k-means**, **hierarchical clustering**, and internal validation (silhouette width and the gap statistic)—with a post-hoc adjusted Rand index (ARI) check against the anonymous `target` codes.
+
+## Repository Structure
+- `Report/` – Main analysis report (`BIOS512-Project.Rmd`).
+- `Data/` – Raw wine dataset (`wine_dataset.csv`).
+>>>>>>> theirs
 - `SRC/` – Source scripts or helpers.
 - `Makefile` – Automates environment setup and report rendering.
 - `Containerfile` – Podman container for reproducibility.
@@ -23,7 +32,11 @@ podman run -d -p 8787:8787 -e PASSWORD=rstudio -v $(pwd):/home/rstudio/project:Z
 
 ### Install Dependencies Locally (without container)
 ```bash
+<<<<<<< ours
 Rscript -e "install.packages(c('tidyverse','cluster','factoextra','caret','glmnet','GGally','nnet','rmarkdown'))"
+=======
+Rscript -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclustcomp','rmarkdown'))"
+>>>>>>> theirs
 ```
 
 ### Generate the Report
@@ -34,14 +47,25 @@ make
 
 Or render manually inside R or RStudio:
 ```r
+<<<<<<< ours
 rmarkdown::render("Report/BIOS512-Project.Rmd", output_format = "html_document")
+=======
+source("SRC/render_report.R")
+# or call Rscript SRC/render_report.R from the shell
+>>>>>>> theirs
 ```
 
 ## Methods Highlight
 - **Exploratory Data Analysis:** Faceted histograms and a correlation heatmap describe the 13 chemical attributes.
+<<<<<<< ours
 - **Dimensionality Reduction:** Principal component analysis with variance-explained plot and biplot colored by cultivar.
 - **Clustering:** K-means (k=3) with visualization and silhouette-based separation check.
 - **Classification:** Multinomial logistic regression and LASSO-regularized multinomial regression with held-out accuracy.
+=======
+- **Dimensionality Reduction:** Principal component analysis with variance-explained plot and unsupervised biplot.
+- **Clustering:** K-means (k=3) and hierarchical clustering with silhouette width, gap statistic, and cross-method agreement.
+- **Hidden-label check:** Adjusted Rand index comparing unsupervised clusters to the anonymous `target` codes.
+>>>>>>> theirs
 
 ## Dataset Source
 **Wine Dataset – Kaggle.**
