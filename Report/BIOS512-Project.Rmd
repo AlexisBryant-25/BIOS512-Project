@@ -1,33 +1,59 @@
 ---
-title: 'Uncorking Quality: A Data Driven Exploration of Wine Chemistry and Quality'
+title: 'Uncorking Quality: A Data-Driven Exploration of Wine Chemistry'
 author: "Alexis Bryant"
 date: "`r Sys.Date()`"
-output: pdf_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: cosmo
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
 library(tidyverse)
 library(cluster)
 library(factoextra)
 library(caret)
 library(glmnet)
 library(GGally)
+<<<<<<< ours
+library(ggplot2)
+=======
+library(nnet)
+
+set.seed(123)
+theme_set(theme_minimal())
+>>>>>>> theirs
 ```
 
 # Introduction
 
-This project uses a Jaggle dataset containing the results of chemical analyses of wines grown in the same region of italy. Each record represents one wine sample with 13 laboratory-measured chemical attributes and a cultivar (class) label. This dataset is ideal fro exploring dimensionality reduction, clustering, and regression/classification.The goal of this project is to uncover the chemical characteristics that distinguish wine types and predict quality.
+<<<<<<< ours
+This project uses a Kaggle dataset containing the results of chemical analyses of wines grown in the same region of Italy. Each record represents one wine sample with 13 laboratory-measured chemical attributes.The goal of this project is to analyze the data using an unsupervised structure to uncover natural groupings and structure within the chemical features using PCA and k-means clustering.
+=======
+This project analyzes the classic Kaggle wine dataset containing laboratory measurements of wines grown in the same region of Italy.
+Each of the **178 samples** has **13 chemical attributes** and a cultivar label (`Class`) indicating one of three grape varieties.
+The analysis addresses three questions:
 
+1. *Which chemical measurements drive the largest variability in the wines?*
+2. *Do natural clusters in the chemistry align with the three cultivars?*
+3. *How accurately can we classify cultivars from chemistry alone?*
+>>>>>>> theirs
 
-# Data Loading and Overview
+To answer them, the report combines exploratory data analysis (EDA), **principal component analysis (PCA)** for dimensionality reduction, **k-means clustering**, and two classification approaches (**multinomial logistic regression** and **LASSO-regularized multinomial regression**).
+
+# Data Loading and Codebook
 
 ```{r}
-wine<-read_csv("wine_dataset.csv")
+wine <- read_csv("wine_dataset.csv", show_col_types = FALSE)
+
 glimpse(wine)
 summary(wine)
 ```
 
+<<<<<<< ours
 This dataset includes variables such as:
 -Alcohol
 -Malic Acid
@@ -43,106 +69,257 @@ This dataset includes variables such as:
 -0D280/0D315
 -Proline
 
-and the class label. All are numeric, making this dataset suitable for PCA and k-means clustering.
-
-
-# Exploratory Data Analysis
+ All are numeric, making this dataset suitable for PCA and k-means clustering.
+=======
+**Codebook**
+>>>>>>> theirs
 
 ```{r}
-wine_long<-wine%>%
-  pivot_longer(cols = -Class, names_to = "Variable",
-               values_to = "Value")
-ggplot(wine_long,aes(x = Values)) + 
-  geom_histogram(bins = 30, fill = "darkred", color = "white") +
-  facet_wrap(~Variable, scales = "free") + theme_minimal() +
-  labs(title = "Distribution of Wine Chemical Features", x = "Value", y = "Count")
+codebook <- tribble(
+  ~Variable, ~Description,
+  "Alcohol", "Alcohol content (% by volume)",
+  "Malic_Acid", "Malic acid concentration (g/L)",
+  "Ash", "Ash content (g/100 mL)",
+  "Alcalinity_of_Ash", "Alkalinity of ash (mEq/L)",
+  "Magnesium", "Magnesium content (mg/L)",
+  "Total_Phenols", "Total phenolic compounds (g/L)",
+  "Flavanoids", "Flavonoid content (g/L)",
+  "Nonflavanoid_Phenols", "Non-flavonoid phenols (g/L)",
+  "Proanthocyanins", "Proanthocyanins (g/L)",
+  "Color_Intensity", "Color intensity (absorbance units)",
+  "Hue", "Hue of the wine color (ratio)",
+  "OD280_OD315", "Optical density ratio at 280/315 nm",
+  "Proline", "Proline concentration (mg/L)",
+  "Class", "Cultivar label (1, 2, or 3)"
+)
+
+knitr::kable(codebook, caption = "Wine attribute codebook")
 ```
 
-Interpretation: 
+# Data Processing
 
-Most variables are roughly continuous, though some show skewed distributions. This suggests standardization before PCA or Clustering.
+<<<<<<< ours
+Since the dataset consists of all numeric variables, we are going to standardize the data to ensure all variables contribute equally to the PCA and clustering steps.
+```{r}
+wine_scaled<- scale(wine)
+```
+We confirm that the scaling process centers the data around 0 and sets variance for each feature.
+```{r}
+apply(wine_scaled, 2, mean)
+apply(wine_scaled, 2, sd)
+```
 
 
-# Dimensionality Reduction (PCA)
+# Principal Component Analysis (PCA)
+
+PCA helps reduce dimensionality and visualize hidden structure. Each principal component represents a linear combination of features that capture the most variance.
 
 ```{r}
+
+pca_res<-prcomp(wine_scaled, center = TRUE, scale. = TRUE)
+summary(pca_res)
+```
+
+
+## Scree Plot
+
+The scree plot shows the proportion of variance explained by each principal component. The first few components capture the majority of the datasets variability.
+
+```{r}
+factoextra::fviz_eig(pca_res, addlabels = TRUE, ylim = c(0, 50))
+```
+=======
+```{r fig.width=10, fig.height=8}
+wine_long <- wine %>%
+  pivot_longer(cols = -Class, names_to = "Variable", values_to = "Value")
+
+ggplot(wine_long, aes(x = Value)) +
+  geom_histogram(bins = 25, fill = "#8C2D2D", color = "white") +
+  facet_wrap(~Variable, scales = "free") +
+  labs(title = "Distribution of Wine Chemistry Features", x = "Value", y = "Count")
+```
+
+Many features are right-skewed (e.g., **Proline**) while others are roughly symmetric.
+This motivates standardizing variables before PCA, clustering, and regression.
+
+```{r fig.width=7, fig.height=6}
+GGally::ggcorr(wine %>% select(-Class), label = TRUE, label_round = 2, hjust = 0.75) +
+  labs(title = "Correlation Matrix of Chemical Attributes")
+```
+
+Strong positive correlations among **Total_Phenols**, **Flavanoids**, and **OD280_OD315** suggest overlapping information that PCA can consolidate.
+
+# Dimensionality Reduction with PCA
+
+```{r fig.width=7, fig.height=5}
 wine_scaled <- scale(select(wine, -Class))
 pca <- prcomp(wine_scaled, center = TRUE, scale. = TRUE)
-fviz_eig(pca)
-fviz_pca_biplot(pca, habillage = wine$Class, addEllipses = TRUE)
+
+fviz_eig(pca) + labs(title = "Variance Explained by Principal Components")
 ```
 
-Interpretation:
+```{r fig.width=7, fig.height=6}
+fviz_pca_biplot(pca,
+  habillage = wine$Class,
+  addEllipses = TRUE,
+  col.var = "gray30",
+  repel = TRUE,
+  labelsize = 3
+) +
+  labs(title = "PCA Biplot Colored by Cultivar")
+```
 
-The scree plot shows how much variance is captured by each principal component.
+The first two components capture most variability and visually separate the three cultivars.
+**Flavanoids**, **Total_Phenols**, and **OD280_OD315** load heavily on PC1, highlighting their shared influence.
+>>>>>>> theirs
 
-PC1 and PC2 together explain most of the variance and vicually separate wine classes well
+## PCA Biplot
 
+This plot shows how samples (points) and variables(arrows) relate in reduced dimensions. The direction and length of arrows indicate which features contribute most to each component.
 
-# Clustering
-
+<<<<<<< ours
 ```{r}
+fviz_pca_biplot(pca_res, geom = "point") 
+```
+=======
+```{r fig.width=7, fig.height=5}
 set.seed(123)
 km <- kmeans(wine_scaled, centers = 3, nstart = 25)
-fviz_cluster(km, data = wine_scaled, geom = "point", ellipse.type = "norm",
-ggtheme = theme_minimal(), main = "K-Means Clustering of Wines")
+>>>>>>> theirs
+
+fviz_cluster(km,
+  data = wine_scaled,
+  geom = "point",
+  ellipse.type = "norm",
+  ggtheme = theme_minimal(),
+  main = "K-Means Clustering of Wines (k = 3)"
+)
 ```
 
-Interpretation:
+<<<<<<< ours
+The first 2 PC's likely represent overall concentration and chemical richness of the wine samples.
+Features such as Flavanoids, Color_Intensity, and Proline may have the strongest loadings, driving much of the variance.
+=======
+```{r}
+sil_width <- silhouette(km$cluster, dist(wine_scaled))
+mean_sil <- mean(sil_width[, 3])
+mean_sil
+```
+>>>>>>> theirs
 
-K-means successfully identifies three clusters, which correspond roughly to the three cultivars. This suggests that wines of different cultivars differ in their chemical composition.
+The average silhouette width (shown above) indicates well-separated clusters that align closely with the three cultivar labels.
 
+<<<<<<< ours
+# K-Means Clustering
 
-# Regression / Classification
-
-## Logistic Regression (Multinomial)
+## Determining Optimal Number of Clusters
 
 ```{r}
-library(nnet)
+set.seed(123)
+within_ss<-map_dbl(1:10, function(k){
+  kmeans(wine_scaled, centers = k, nstart = 20)$tot.withinss
+  })
+tibble(k = 1:10, wss = within_ss) %>%
+  ggplot(aes(k, wss)) + geom_line() + geom_point(size = 2, color = "blue") +
+  labs(title = "Elbow Method for Optimal K", x = "Number of Clusters (K)", y = "Total Within Sum of Squares")
+```
+
+Based on the elbow point, we select K=3, consistent with prior studies on this dataset (which corresponds to 3 cultivars)
+
+
+## Applying K-Means
+
+```{r}
+set.seed(123)
+kmeans_res<- kmeans(wine_scaled, centers = 3, nstart = 25)
+wine_clustered<- as_tibble(wine_scaled) %>% 
+  mutate(Cluster = factor(kmeans_res$cluster))
+```
+
+## Visualizing Cluster Separation
+
+```{r}
+GGally::ggpairs(wine_clustered, columns = 1:3, aes(color = Cluster, alpha = 0.5))
+
+factoextra::fviz_cluster(kmeans_res, data = wine_scaled, ellipse.type = "norm", geom = "point", main = "K-Means Clustering Results")
+```
+Interpretation:
+
+The 3 clusters correspond to distinct groups of wines with differeing chemical balances. These may reflect natural subtypes based on cultivation or production style, even though the dataset does not explicitly include those labels
+
+
+# Correlation Analysis and Feature Relationships
+
+Understanding how features correlate can provide insight into how certain chemicals vary together.
+
+```{r}
+library(corrplot)
+cor_matrix<-cor(wine)
+
+corrplot(cor_matrix, method = "color", tl.cex = 0.8, addCoef.col = "black", number.cex = 0.6, title = "Feature Correlation Heatmap: Wine Dataset")
+```
+
+
+Observations:
+
+Flavanoids, Total_Phenols are strongly correlated, suggesting the co vary across wine samples.
+Color_Intensity shows weaker correlations, indicating it captures unique variation.
+
+=======
+# Classification and Regression
+
+## Multinomial Logistic Regression
+
+```{r}
 wine$Class <- as.factor(wine$Class)
 
-set.seed(123)
-train_idx <- createDataPartition(wine$Class, p = 0.75, list = FALSE)
-train <- wine[train_idx, ]
-test <- wine[-train_idx, ]
+split <- createDataPartition(wine$Class, p = 0.75, list = FALSE)
+train <- wine[split, ]
+test <- wine[-split, ]
 
-model <- multinom(Class ~ ., data = train)
-pred <- predict(model, newdata = test)
-confusionMatrix(pred, test$Class)
+mlogit_model <- multinom(Class ~ ., data = train)
+mlogit_pred <- predict(mlogit_model, newdata = test)
+mlogit_cm <- confusionMatrix(mlogit_pred, test$Class)
+mlogit_cm
 ```
-
-Interpretation:
-
-The confusion matrix shows high classification accuracy, indicating that the chemical properties effectively predict wine type.
-
-
-## LASSO Regularized Classification
 
 ```{r}
-x <- model.matrix(Class ~ . - 1, data = train)
-y <- train$Class
-
-set.seed(123)
-cvfit <- cv.glmnet(x, y, family = "multinomial", alpha = 1)
-plot(cvfit)
-coef(cvfit, s = "lambda.min")
+mlogit_accuracy <- mlogit_cm$overall["Accuracy"]
+mlogit_accuracy
 ```
 
-Interpretation:
+The multinomial model achieves high accuracy, confirming that chemical measurements strongly predict cultivar.
+>>>>>>> theirs
 
-LASSO shrinks less informative coefficients toward zero, leaving only the most predictive variables.
-This results in a parsimonious model with nearly the same accuracy but simpler interpretation.
+## LASSO-Regularized Multinomial Regression
 
+```{r fig.width=7, fig.height=5}
+x_train <- model.matrix(Class ~ . - 1, data = train)
+y_train <- train$Class
 
-# Conclusions and Future Work
+cvfit <- cv.glmnet(x_train, y_train, family = "multinomial", alpha = 1)
+plot(cvfit)
+```
 
-PCA revealed that the first two components explain most of the variability and separate cultivars clearly.
+```{r}
+x_test <- model.matrix(Class ~ . - 1, data = test)
+lasso_pred <- predict(cvfit, newx = x_test, s = "lambda.min", type = "class") %>%
+  factor(levels = levels(test$Class))
+lasso_cm <- confusionMatrix(lasso_pred, test$Class)
+lasso_cm
+```
 
-K-means clustering identified natural groupings consistent with wine type.
+```{r}
+lasso_accuracy <- lasso_cm$overall["Accuracy"]
+lasso_accuracy
+```
 
-Logistic and LASSO regression both achieved high accuracy, showing chemical composition is predictive of cultivar.
+The LASSO model retains a subset of influential predictors while matching the performance of the unregularized multinomial model.
 
-Future work: compare these results to unsupervised clustering on quality ratings, or test other ML classifiers (e.g., random forest).
+# Conclusions and Next Steps
 
+- **Dimensionality reduction:** The first two PCs capture most variability and reveal clear cultivar separation driven by phenolic measurements.
+- **Clustering:** K-means with three centers yields well-separated clusters (mean silhouette width above) that mirror the cultivar labels.
+- **Classification:** Both multinomial and LASSO-regularized models achieve strong predictive accuracy, demonstrating that chemical profiles alone can identify cultivar.
 
-
+**Future work** could explore random forests or gradient boosting for non-linear decision boundaries, incorporate external quality ratings, or test stability across vintages and regions.
