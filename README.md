@@ -1,60 +1,48 @@
-
 # BIOS 512 Final Project: Uncorking Quality – A Data-Driven Exploration of Wine Chemistry
 
 ## Overview
-This project analyzes a Kaggle dataset containing results of chemical analyses of wines from the same region of Italy.  
-Each record represents one wine sample with 13 measured chemical attributes and a cultivar label (three classes).  
-The project applies **dimensionality reduction (PCA)**, **clustering (K-means)**, and **classification (logistic and LASSO regression)** to uncover the factors that distinguish wine types.
-
+This project analyzes a Kaggle dataset containing 178 laboratory measurements of wines from the same Italian region.
+Each record includes 13 chemical attributes and a cultivar label (three classes).
+The analysis combines exploratory data analysis, **PCA**, **k-means clustering**, and **multinomial classification** (with and without LASSO regularization) to understand which chemical features distinguish cultivars and how accurately they can be predicted.
 
 ## Repository Structure
-
-data/ – Contains the dataset (wine_dataset.csv)
-src/ – Analysis and preprocessing scripts 
-report/ – Main analysis report (BIOS512-Project.Rmd, outputs)
-Makefile – Automates environment setup and report rendering
-Containerfile – Podman container for reproducibility
-README.md – Project overview and documentation
-
+- `Report/` – Main analysis report (`BIOS512-Project.Rmd`) and the raw dataset (`wine_dataset.csv`).
+- `Data/` – (optional) placeholder for additional datasets.
+- `SRC/` – Source scripts or helpers.
+- `Makefile` – Automates environment setup and report rendering.
+- `Containerfile` – Podman container for reproducibility.
+- `README.md` – Project overview and usage instructions.
 
 ## Getting Started
 
 ### Build the Container
-```{bash}
+```bash
 podman build -t bios512-wine .
 podman run -d -p 8787:8787 -e PASSWORD=rstudio -v $(pwd):/home/rstudio/project:Z bios512-wine
 ```
+
+### Install Dependencies Locally (without container)
+```bash
+Rscript -e "install.packages(c('tidyverse','cluster','factoextra','caret','glmnet','GGally','nnet','rmarkdown'))"
+```
+
 ### Generate the Report
-Inside Rstudio or the container terminal:
-```{bash}
+Run the following from the project root:
+```bash
 make
 ```
-OR manually in RStudio:
-```{r}
-rmarkdown::render("report/BIOS512-Project.Rmd", output_format = "html_document")
+
+Or render manually inside R or RStudio:
+```r
+rmarkdown::render("Report/BIOS512-Project.Rmd", output_format = "html_document")
 ```
 
-
-## Methods Used
-
-Exploratory Data Analysis (EDA)
-Histograms, correlation exploration.
-
-Dimensionality Reduction
-PCA with scree plot and biplot.
-
-Clustering
-K-means with visualization of 3 clusters.
-
-Classification / Regression
-Logistic regression and LASSO regularization.
+## Methods Highlight
+- **Exploratory Data Analysis:** Faceted histograms and a correlation heatmap describe the 13 chemical attributes.
+- **Dimensionality Reduction:** Principal component analysis with variance-explained plot and biplot colored by cultivar.
+- **Clustering:** K-means (k=3) with visualization and silhouette-based separation check.
+- **Classification:** Multinomial logistic regression and LASSO-regularized multinomial regression with held-out accuracy.
 
 ## Dataset Source
-
-Wine Dataset – Kaggle
-
-This dataset contains the results of a chemical analysis of wines grown in the same region of Italy.
-The wines come from three different cultivars (classes). Each record represents one wine sample, along with 13 chemical properties measured in a laboratory.
-The dataset is widely used in machine-learning research to demonstrate classification, EDA, and model comparison.
-
-
+**Wine Dataset – Kaggle.**
+Laboratory analyses of wines from three cultivars in the same Italian region, featuring chemical measurements such as alcohol, phenolic compounds, acidity metrics, and color intensity.
