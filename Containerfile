@@ -11,7 +11,11 @@ RUN apt-get update -qq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+<<<<<<< ours
 RUN R -e "install.packages(c('tidyverse','cluster','factoextra','caret','glmnet','GGally','nnet','rmarkdown'))"
+=======
+RUN R -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclustcomp','rmarkdown'))"
+>>>>>>> theirs
 
 WORKDIR /home/rstudio/project
 COPY . /home/rstudio/project
