@@ -13,19 +13,19 @@ R_FILES = $(shell find . -name "*.R" -o -name "*.Rmd")
 all: $(OUTPUT)
 
 $(OUTPUT): $(REPORT) $(R_FILES)
-	Rscript -e "rmarkdown::render('$(REPORT)', output_file = '$(OUTPUT)')"
-	@echo "Report successfully generated: $(OUTPUT)"
+Rscript SRC/render_report.R
+@echo "Report successfully generated: $(OUTPUT)"
 
 build:
 	podman build -t $(IMAGE_NAME) .
 
 run:
 	podman run -d -p 8787:8787 -e PASSWORD=rstudio \
-		-v $(PWD):/home/rstudio/project:Z $(IMAGE_NAME)
+	        -v $(PWD):/home/rstudio/project:Z $(IMAGE_NAME)
 	@echo "RStudio running at http://localhost:8787 (username: rstudio, password: rstudio)"
 
 install:
-	Rscript -e "install.packages(c('tidyverse','cluster','factoextra','caret','glmnet','GGally','nnet','rmarkdown'))"
+	Rscript -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclustcomp','rmarkdown'))"
 
 clean:
 	rm -f $(OUTPUT)
