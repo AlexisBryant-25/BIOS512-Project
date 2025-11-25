@@ -2,8 +2,7 @@
 
 ## Overview
 This project analyzes a Kaggle dataset containing 178 laboratory measurements of wines from the same Italian region.
-<<<<<<< ours
-Each record includes 13 chemical attributes and a cultivar label (three classes).
+Each record includes 13 chemical attributes.
 The analysis combines exploratory data analysis, **PCA**, **k-means clustering**, and **multinomial classification** (with and without LASSO regularization) to understand which chemical features distinguish cultivars and how accurately they can be predicted.
 
 ## Repository Structure
@@ -16,7 +15,6 @@ Because cultivar identities are unknown, the analysis emphasizes unsupervised st
 ## Repository Structure
 - `Report/` – Main analysis report (`BIOS512-Project.Rmd`).
 - `Data/` – Raw wine dataset (`wine_dataset.csv`).
->>>>>>> theirs
 - `SRC/` – Source scripts or helpers.
 - `Makefile` – Automates environment setup and report rendering.
 - `Containerfile` – Podman container for reproducibility.
@@ -47,17 +45,14 @@ make
 
 Or render manually inside R or RStudio:
 ```r
-<<<<<<< ours
 rmarkdown::render("Report/BIOS512-Project.Rmd", output_format = "html_document")
 =======
 source("SRC/render_report.R")
 # or call Rscript SRC/render_report.R from the shell
->>>>>>> theirs
 ```
 
 ## Methods Highlight
 - **Exploratory Data Analysis:** Faceted histograms and a correlation heatmap describe the 13 chemical attributes.
-<<<<<<< ours
 - **Dimensionality Reduction:** Principal component analysis with variance-explained plot and biplot colored by cultivar.
 - **Clustering:** K-means (k=3) with visualization and silhouette-based separation check.
 - **Classification:** Multinomial logistic regression and LASSO-regularized multinomial regression with held-out accuracy.
@@ -65,7 +60,6 @@ source("SRC/render_report.R")
 - **Dimensionality Reduction:** Principal component analysis with variance-explained plot and unsupervised biplot.
 - **Clustering:** K-means (k=3) and hierarchical clustering with silhouette width, gap statistic, and cross-method agreement.
 - **Hidden-label check:** Adjusted Rand index comparing unsupervised clusters to the anonymous `target` codes.
->>>>>>> theirs
 
 ## Dataset Source
 **Wine Dataset – Kaggle.**
