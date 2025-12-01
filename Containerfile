@@ -12,7 +12,7 @@ RUN apt-get update -qq \
     && rm -rf /var/lib/apt/lists/*
 
 
-RUN R -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclustcomp','rmarkdown'))"
+RUN R -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclust','rmarkdown'))"
 
 
 WORKDIR /home/rstudio/project
