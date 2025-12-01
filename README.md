@@ -23,11 +23,7 @@ podman run -d -p 8787:8787 -e PASSWORD=rstudio -v $(pwd):/home/rstudio/project:Z
 
 ### Install Dependencies Locally (without container)
 ```bash
-<<<<<<< ours
-Rscript -e "install.packages(c('tidyverse','cluster','factoextra','caret','glmnet','GGally','nnet','rmarkdown'))"
-=======
-Rscript -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclustcomp','rmarkdown'))"
->>>>>>> theirs
+Rscript -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclust','rmarkdown'))"
 ```
 
 ### Generate the Report
