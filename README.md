@@ -2,15 +2,8 @@
 
 ## Overview
 This project analyzes a Kaggle dataset containing 178 laboratory measurements of wines from the same Italian region.
-Each record includes 13 chemical attributes.
-The analysis combines exploratory data analysis, **PCA**, **k-means clustering**, and **multinomial classification** (with and without LASSO regularization) to understand which chemical features distinguish cultivars and how accurately they can be predicted.
-
-## Repository Structure
-- `Report/` – Main analysis report (`BIOS512-Project.Rmd`) and the raw dataset (`wine_dataset.csv`).
-- `Data/` – (optional) placeholder for additional datasets.
-=======
-Each record includes 13 chemical attributes and an unlabeled numeric `target` code (0–2) rather than explicit cultivar names.
-Because cultivar identities are unknown, the analysis emphasizes unsupervised structure—EDA, **PCA**, **k-means**, **hierarchical clustering**, and internal validation (silhouette width and the gap statistic)—with a post-hoc adjusted Rand index (ARI) check against the anonymous `target` codes.
+Each record includes 13 chemical attributes and no cultivar label; some dataset copies carry an unlabeled numeric `target` code (0–2), but it is optional for the workflow.
+Because cultivar identities are unknown (and the `target` column may be absent), the analysis emphasizes unsupervised structure—EDA, **PCA**, **k-means**, **hierarchical clustering**, and internal validation (silhouette width and the gap statistic)—with an optional post-hoc adjusted Rand index (ARI) check when the anonymous codes are present.
 
 ## Repository Structure
 - `Report/` – Main analysis report (`BIOS512-Project.Rmd`).
@@ -53,13 +46,9 @@ source("SRC/render_report.R")
 
 ## Methods Highlight
 - **Exploratory Data Analysis:** Faceted histograms and a correlation heatmap describe the 13 chemical attributes.
-- **Dimensionality Reduction:** Principal component analysis with variance-explained plot and biplot colored by cultivar.
-- **Clustering:** K-means (k=3) with visualization and silhouette-based separation check.
-- **Classification:** Multinomial logistic regression and LASSO-regularized multinomial regression with held-out accuracy.
-=======
 - **Dimensionality Reduction:** Principal component analysis with variance-explained plot and unsupervised biplot.
 - **Clustering:** K-means (k=3) and hierarchical clustering with silhouette width, gap statistic, and cross-method agreement.
-- **Hidden-label check:** Adjusted Rand index comparing unsupervised clusters to the anonymous `target` codes.
+- **Hidden-label check (optional):** Adjusted Rand index comparing unsupervised clusters to the anonymous `target` codes, when provided.
 
 ## Dataset Source
 **Wine Dataset – Kaggle.**
