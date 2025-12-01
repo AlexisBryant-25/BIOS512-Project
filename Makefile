@@ -25,7 +25,7 @@ run:
 	@echo "RStudio running at http://localhost:8787 (username: rstudio, password: rstudio)"
 
 install:
-	Rscript -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclustcomp','rmarkdown'))"
+	Rscript -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclust','rmarkdown'))"
 
 clean:
 	rm -f $(OUTPUT)
