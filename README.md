@@ -10,7 +10,7 @@ Because cultivar identities are unknown (and the `target` column may be absent),
 
 
 ## Repository Structure
-- `Report/` – Main analysis report (`BIOS512-Project.Rmd`).
+- `Report/` – Main analysis report (`BIOS512-Project.Rmd`), Dataset used in report , and Figures folder.
 - `Data/` – Raw wine dataset (`wine_dataset.csv`).
 - `SRC/` – Source scripts or helpers.
 - `Makefile` – Automates environment setup and report rendering.
@@ -20,11 +20,11 @@ Because cultivar identities are unknown (and the `target` column may be absent),
 ## Getting Started
 
 ### Build the Container
+**Works the same with Docker**
 ```bash
 podman build -t bios512-wine .
 podman run -d -p 8787:8787 -e PASSWORD=rstudio -v $(pwd):/home/rstudio/project:Z bios512-wine
 ```
-
 ### Install Dependencies Locally (without container)
 ```bash
 Rscript -e "install.packages(c('tidyverse','cluster','factoextra','GGally','mclust','rmarkdown'))"
